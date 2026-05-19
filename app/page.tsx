@@ -10,13 +10,20 @@ import { observeAuthState, logOut } from "../lib/auth";
 export default function Home() {
   const [authMessage, setAuthMessage] = useState("Checking user...");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+
   useEffect(() => {
     const unsubscribe = observeAuthState((user) => {
       if (user) {
         setAuthMessage(`Logged in as: ${user.email}`);
+        setIsAuthModalOpen(false);
+        setIsAuthenticated(true);
+        setIsAuthChecked(true);
       } else {
         setAuthMessage("No authorized user");
+        setIsAuthenticated(false);
+        setIsAuthChecked(true);
       }
     });
 
@@ -31,7 +38,7 @@ export default function Home() {
     }
   }
 
-function openAuthModal() {
+  function openAuthModal() {
     setIsAuthModalOpen(true);
   }
 
@@ -45,20 +52,19 @@ function openAuthModal() {
       <p>Find the right psychologist for your needs</p>
       <Link href="/psychologists">Get started</Link>
 
-      <p>{authMessage}</p>
-
-      <button type="button" onClick={openAuthModal}>
-        Open Auth Modal
-      </button>
-
-    <button type="button" onClick={handleLogOut}>
-        Log out
-      </button>
-
+      <p>{isAuthChecked ? authMessage : "Checking user..."}</p>
+      {isAuthenticated ? (
+        <button type="button" onClick={handleLogOut}>
+          Log out
+        </button>
+      ) : (
+        <button type="button" onClick={openAuthModal}>
+          Open Auth Modal
+        </button>
+      )}
       <Modal isOpen={isAuthModalOpen} onClose={closeAuthModal}>
-        <AuthForm />
+        <AuthForm onSuccess={closeAuthModal} />
       </Modal>
-
     </main>
   );
 }
